@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.24;
 
 import "./BalancerFlashLoan.sol";
-import "../node_modules/@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
-import "../node_modules/@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
+import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
+import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
+import {NonameToken} from "./NoNameToken.sol";
+import "@uniswap/v2-core/contracts/UniswapV2Factory.sol";
 
 contract main {
     //how many jumps of work you need
@@ -13,13 +15,18 @@ contract main {
     uint public numberOfSwaps;
 
     address public constant vault = 0xBA12222222228d8Ba445958a75a0704d566BF2C8;
-    address public constant keeper = 0x3a3eE61F7c6e1994a2001762250A5E17B2061b6d;
+    address public constant keeper = 0x095454F216EC9485da86D49aDffAcFD0Fa3e5BE5;
 
-    IUniswapV2Router02 public uniswapV2Router = IUniswapV2Router02(address(0));
-    IUniswapV2Pair public uniswapV2Pair = IUniswapV2Pair(address(1));
+    IUniswapV2Router02 public uniswapV2Router = IUniswapV2Router02(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
+    IUniswapV2Pair public uniswapV2Pair;
 
-    IERC20  token0 = IERC20(0x03ab458634910AaD20eF5f1C8ee96F1D6ac54919); // RAI
+    NonameToken  token0; // NNT
     IERC20  token1 = IERC20(0x6B175474E89094C44Da98b954EedeAC495271d0F); // DAI
+
+    constructor (address payable _noNameToken) {
+        token0 = NonameToken(_noNameToken);
+        uniswapV2Pair = IUniswapV2Pair(UniswapV2Factory(uniswapV2Router.factory()).createPair(address(token0), address(token1)));
+    }
 
     function receiveFlashLoan(
         IERC20[] memory tokens,
