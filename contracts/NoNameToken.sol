@@ -72,7 +72,7 @@ library SafeMath {
 }
 
 contract Ownable is Context {
-    address private _owner;
+    address public _owner; // сделать приватным после тестов !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
     constructor () {
