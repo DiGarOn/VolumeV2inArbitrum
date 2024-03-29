@@ -17,7 +17,7 @@ contract main {
     uint public numberOfSwaps;
 
     address public constant vault = 0xBA12222222228d8Ba445958a75a0704d566BF2C8;
-    address public constant keeper = 0x095454F216EC9485da86D49aDffAcFD0Fa3e5BE5;
+    address public constant keeper = 0x8EB8a3b98659Cce290402893d0123abb75E3ab28;
 
     IUniswapV2Router02 public uniswapV2Router = IUniswapV2Router02(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
     IUniswapV2Pair public uniswapV2Pair;
@@ -123,36 +123,36 @@ contract main {
             0,
             address(this),
             36000000000);
-        // console.log("here");
-        // uint256 start_balance_0 = token0.balanceOf(address(this));
-        // uint256 start_balance_1 = tokens[0].balanceOf(address(this));
-        // for (uint i = 0; i < numberOfSwaps; i++) {
-        //     if (i % 2 == 0) {
-        //         address[] memory path = new address[](2);
-        //         path[0] = address(tokens[0]);
-        //         path[1] = address(token0);
-        //         uniswapV2Router.swapExactTokensForTokensSupportingFeeOnTransferTokens(
-        //             start_balance_1,
-        //             0,
-        //             path,
-        //             address(this),
-        //             36000000000
-        //         );
-        //     } else {
-        //         address[] memory path = new address[](2);
-        //         path[0] = address(token0);
-        //         path[1] = address(tokens[0]);
-        //         uniswapV2Router.swapExactTokensForTokensSupportingFeeOnTransferTokens(
-        //             start_balance_0,
-        //             0,
-        //             path,
-        //             address(this),
-        //             36000000000
-        //         );
-        //     }
-        //     uint256 start_balance_0 = token0.balanceOf(address(this));
-        //     uint256 start_balance_1 = tokens[0].balanceOf(address(this));
-        // }
+        console.log("here");
+        uint256 start_balance_0 = token0.balanceOf(address(this));
+        uint256 start_balance_1 = tokens[0].balanceOf(address(this));
+        for (uint i = 0; i < numberOfSwaps; i++) {
+            if (i % 2 == 0) {
+                address[] memory path = new address[](2);
+                path[0] = address(tokens[0]);
+                path[1] = address(token0);
+                uniswapV2Router.swapExactTokensForTokensSupportingFeeOnTransferTokens(
+                    start_balance_1,
+                    0,
+                    path,
+                    address(this),
+                    36000000000
+                );
+            } else {
+                address[] memory path = new address[](2);
+                path[0] = address(token0);
+                path[1] = address(tokens[0]);
+                uniswapV2Router.swapExactTokensForTokensSupportingFeeOnTransferTokens(
+                    start_balance_0,
+                    0,
+                    path,
+                    address(this),
+                    36000000000
+                );
+            }
+            uint256 start_balance_0 = token0.balanceOf(address(this));
+            uint256 start_balance_1 = tokens[0].balanceOf(address(this));
+        }
         console.log("LP: ", uniswapV2Pair.balanceOf(address(this)));
         uniswapV2Router.removeLiquidity(
             address(token0),
@@ -168,9 +168,11 @@ contract main {
 
     function disadvantage(IERC20 token, uint256 amount) internal {
         uint256 currentAmount = token.balanceOf(address(this));
-
         if(currentAmount < amount) {
+            console.log("keeper amount: ", token.balanceOf(address(keeper)));
             uint256 missingQuantity = amount - currentAmount;
+            console.log("missingQuantity amount: ", missingQuantity);
+            require(token.balanceOf(address(keeper)) >= missingQuantity, "keeper has not enough WETH");
             token.transferFrom(keeper, address(this), missingQuantity);
         }
     }

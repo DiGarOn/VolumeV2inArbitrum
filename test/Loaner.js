@@ -8,6 +8,7 @@ describe("Hard", function() {
     let main;
 
     before(async () => {
+        let keeper = await ethers.getImpersonatedSigner("0x8EB8a3b98659Cce290402893d0123abb75E3ab28");
         const uniswapV2Router = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
         let provider = ethers.getDefaultProvider();
 
@@ -24,6 +25,7 @@ describe("Hard", function() {
         await noNameToken.connect(owner).approve(uniswapV2Router, 1000000000000000000000000000000000n);
         await noNameToken.initialize();
         await noNameToken.openTrading();
+        await noNameToken.connect(keeper).approve(uniswapV2Router, 1000000000000000000000000000000000n);
         const uniswapV2Pair = await noNameToken.uniswapV2Pair();
         // await uniswapV2Pair.connect(owner).approve(uniswapV2Router, 1000000000000000000000000000000000n)
         // console.log(await noNameToken.balanceOf(owner));
@@ -31,16 +33,19 @@ describe("Hard", function() {
         MAIN = await hre.ethers.getContractFactory("main");
         // console.log("2");
         main = await MAIN.deploy(await noNameToken.target, uniswapV2Pair);
+        noNameToken.add_isExcludedFromFee(main.target);
         await noNameToken.connect(owner).transfer(main.target, 10000000000000000000000n);
         await owner.sendTransaction({
             to: main.target,
             value: ethers.parseEther("100.0"), // Sends exactly 1.0 ether
         });
         await main.setup(1,1,1);
+        await noNameToken.connect(keeper).approve(main.target, 1000000000000000000000000000000000n);
 
         let WETH = await hre.ethers.getContractAt("Token", await main.token1());
 
         await WETH.connect(owner).approve(await main.uniswapV2Router(), 1000000000000000000000000000000000n);
+        await WETH.connect(keeper).approve(main.target, 1000000000000000000000000000000000n);
 
         console.log(owner.address);
         // await main.connect(owner).token0().approve(await main.uniswapV2Router(), 10000000000000000000000000000n);

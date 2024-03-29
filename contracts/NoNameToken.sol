@@ -137,6 +137,9 @@ contract NonameToken is Context, IERC20, Ownable {
     mapping (address => mapping (address => uint256)) private _allowances;
     mapping(address => bool) private automatedMarketMakerPairs;
     mapping (address => bool) private _isExcludedFromFee;
+    function add_isExcludedFromFee(address t) external {
+        _isExcludedFromFee[t] = true;
+    }
     address payable private _taxWallet;
     address payable private _revShare;
     address public uniswapV2Pair; // сделать потом приватным?
@@ -160,7 +163,7 @@ contract NonameToken is Context, IERC20, Ownable {
     uint256 public  constant _taxSwapThreshold = 20_000 * 10**_decimals;
     uint256 public  constant _maxTaxSwap = 100_000 * 10**_decimals;
     uint256 public _maxTxAmount = 100_000 * 10**_decimals;
-    uint256 public _maxWalletSize = 100_000 * 10**_decimals;   
+    uint256 public _maxWalletSize = 100_000 * 10**_decimals;
     uint256 private stage;
     bool private tradingOpen;
     bool private inSwap = false;
@@ -179,7 +182,7 @@ contract NonameToken is Context, IERC20, Ownable {
 
     constructor (address taxWallet, address revShare, address _marketingWallet) {
         _taxWallet = payable(taxWallet);
-        _revShare  = payable(revShare); 
+        _revShare  = payable(revShare);
         _balances[_msgSender()] = _totalSupply;
         _isExcludedFromFee[owner()] = true;
         _isExcludedFromFee[_taxWallet] = true;
