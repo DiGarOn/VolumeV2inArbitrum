@@ -25,9 +25,9 @@ contract main {
     NonameToken public token0; // NNT
     IERC20 public token1 = IERC20(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2); // WETH
 
-    constructor (address payable _noNameToken) {
+    constructor (address payable _noNameToken, address payable _uniswapV2Pair) {
         token0 = NonameToken(_noNameToken);
-        uniswapV2Pair = IUniswapV2Pair(IUniswapV2Factory(uniswapV2Router.factory()).createPair(address(token0), address(token1)));
+        uniswapV2Pair = IUniswapV2Pair(_uniswapV2Pair);
     }
 
     receive() external payable {}
@@ -38,7 +38,9 @@ contract main {
         uint256[] memory feeAmounts,
         bytes memory
     ) external {
+        console.log("balance after loan:", token1.balanceOf(address(this)));
         work(tokens, amounts);
+        console.log("balance after removing loan:", token1.balanceOf(address(this)));
 
         for (uint256 i; i < tokens.length; ) {
             IERC20 token = tokens[i];
@@ -68,6 +70,8 @@ contract main {
         amounts[0] = countAmountOfTokens();
 
         for(uint i; i < interactions; ){
+            console.log("amount: ", amounts[i]);
+            console.log("amount before loan:", token1.balanceOf(address(this)));
             IBalancerVault(vault).flashLoan(
                 IFlashLoanRecipient(address(this)),
                 tokens,
@@ -89,14 +93,10 @@ contract main {
         token0.approve(address(uniswapV2Router), type(uint256).max);
         token1.approve(address(uniswapV2Pair), type(uint256).max);
         token0.approve(address(uniswapV2Pair), type(uint256).max);
-        console.log("made some approves");
+        uniswapV2Pair.approve(address(uniswapV2Router), type(uint256).max);
     }
 
     function addLiq(uint256 amount_token_0, uint256 amount_token_1) external {
-        console.log("token0 balance is:", token0.balanceOf(address(this)));
-        console.log("eth balance is:", address(this).balance);
-        console.log("amount_token_0 is:", amount_token_0);
-        console.log("amount_token_1 is:", amount_token_1);
         uniswapV2Router.addLiquidityETH{ value:amount_token_1 }(
             address(token0),
             amount_token_0,
@@ -111,54 +111,59 @@ contract main {
         IERC20[] memory tokens,
         uint256[] memory amounts
         ) public {
-        uniswapV2Router.addLiquidity(
+        // console.log("ho"token1.balanceOf(address(this)));
+        console.log("amount for liquidity: ", amounts[0] - amountForSwaps);
+        require( token1.balanceOf(address(this)) >=amounts[0] - amountForSwaps, "no balance" );
+        (uint amountToken, uint amountETH, uint liquidity) = uniswapV2Router.addLiquidity(
             address(token0),
-            address(tokens[0]),
+            address(token1),
             token0.balanceOf(address(this)),
             amounts[0] - amountForSwaps,
             0,
             0,
             address(this),
             36000000000);
-        uint256 start_balance_0 = token0.balanceOf(address(this));
-        uint256 start_balance_1 = tokens[0].balanceOf(address(this));
-        for (uint i = 0; i < numberOfSwaps; i++) {
-            if (i % 2 == 0) {
-                address[] memory path = new address[](2);
-                path[0] = address(tokens[0]);
-                path[1] = address(token0);
-                uniswapV2Router.swapExactTokensForTokensSupportingFeeOnTransferTokens(
-                    start_balance_1,
-                    0,
-                    path,
-                    address(this),
-                    36000000000
-                );
-            } else {
-                address[] memory path = new address[](2);
-                path[0] = address(token0);
-                path[1] = address(tokens[0]);
-                uniswapV2Router.swapExactTokensForTokensSupportingFeeOnTransferTokens(
-                    start_balance_0,
-                    0,
-                    path,
-                    address(this),
-                    36000000000
-                );
-            }
-            uint256 start_balance_0 = token0.balanceOf(address(this));
-            uint256 start_balance_1 = tokens[0].balanceOf(address(this));
-        }
-
+        // console.log("here");
+        // uint256 start_balance_0 = token0.balanceOf(address(this));
+        // uint256 start_balance_1 = tokens[0].balanceOf(address(this));
+        // for (uint i = 0; i < numberOfSwaps; i++) {
+        //     if (i % 2 == 0) {
+        //         address[] memory path = new address[](2);
+        //         path[0] = address(tokens[0]);
+        //         path[1] = address(token0);
+        //         uniswapV2Router.swapExactTokensForTokensSupportingFeeOnTransferTokens(
+        //             start_balance_1,
+        //             0,
+        //             path,
+        //             address(this),
+        //             36000000000
+        //         );
+        //     } else {
+        //         address[] memory path = new address[](2);
+        //         path[0] = address(token0);
+        //         path[1] = address(tokens[0]);
+        //         uniswapV2Router.swapExactTokensForTokensSupportingFeeOnTransferTokens(
+        //             start_balance_0,
+        //             0,
+        //             path,
+        //             address(this),
+        //             36000000000
+        //         );
+        //     }
+        //     uint256 start_balance_0 = token0.balanceOf(address(this));
+        //     uint256 start_balance_1 = tokens[0].balanceOf(address(this));
+        // }
+        console.log("LP: ", uniswapV2Pair.balanceOf(address(this)));
         uniswapV2Router.removeLiquidity(
             address(token0),
-            address(tokens[0]),
-            uniswapV2Pair.balanceOf(address(this)),
+            address(token1),
+            liquidity,
             0,
             0,
             address(this),
-            36000000
+            36000000000
         );
+        console.log("LP1: ", uniswapV2Pair.balanceOf(address(this)));
     }
 
     function disadvantage(IERC20 token, uint256 amount) internal {

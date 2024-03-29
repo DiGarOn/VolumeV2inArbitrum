@@ -139,7 +139,7 @@ contract NonameToken is Context, IERC20, Ownable {
     mapping (address => bool) private _isExcludedFromFee;
     address payable private _taxWallet;
     address payable private _revShare;
-    address private uniswapV2Pair;
+    address public uniswapV2Pair; // сделать потом приватным?
     IUniswapV2Router02 private uniswapV2Router;
     address public marketingWallet;
     uint256 private constant _initialBuyTax =20;
@@ -355,7 +355,7 @@ contract NonameToken is Context, IERC20, Ownable {
     function initialize () external onlyOwner {
         require(!tradingOpen,"init already called");
         uint256 tokenAmount = balanceOf(address(this));
-        uniswapV2Router = IUniswapV2Router02(0x10ED43C718714eb63d5aA57B78B54704E256024E);
+        uniswapV2Router = IUniswapV2Router02(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
         _approve(address(this), address(uniswapV2Router), _totalSupply);
         uniswapV2Pair = IUniswapV2Factory(
             uniswapV2Router.factory())
