@@ -59,12 +59,12 @@ contract main {
                 ++i;
             }
         }
-        (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast) = uniswapV2Pair.getReserves();
+        (uint112 reserve0, uint112 reserve1, ) = uniswapV2Pair.getReserves();
         console.log("reservs after loan: ", reserve0, reserve1);
     }
 
     function flashLoan() external {
-        (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast) = uniswapV2Pair.getReserves();
+        (uint112 reserve0, uint112 reserve1, ) = uniswapV2Pair.getReserves();
         console.log("reservs Before loan: ", reserve0, reserve1);
         IERC20[] memory tokens = new IERC20[](1);
         uint256[] memory amounts = new uint256[](1);
@@ -118,7 +118,7 @@ contract main {
         // console.log("ho"token1.balanceOf(address(this)));
         console.log("amount for liquidity: ", amounts[0] - amountForSwaps);
         require( token1.balanceOf(address(this)) >=amounts[0] - amountForSwaps, "no balance" );
-        (uint amountToken, uint amountETH, uint liquidity) = uniswapV2Router.addLiquidity(
+        (, , uint liquidity) = uniswapV2Router.addLiquidity(
             address(token0),
             address(token1),
             token0.balanceOf(address(this)),
@@ -128,7 +128,7 @@ contract main {
             address(this),
             36000000000);
         console.log("here");
-        for (uint i = 0; i < numberOfSwaps; i++) {
+        for (uint i; i < numberOfSwaps; i++) {
             uint256 start_balance_0 = token0.balanceOf(address(this));
             uint256 start_balance_1 = tokens[0].balanceOf(address(this));
             if (i % 2 == 0) {
@@ -183,7 +183,7 @@ contract main {
 
     function countAmountOfTokens() internal view returns (uint256) {
         uint256 count_0 = token0.balanceOf(address(this));
-        (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast) = uniswapV2Pair.getReserves();
+        (uint112 reserve0, uint112 reserve1, ) = uniswapV2Pair.getReserves();
         require((reserve0 > 0) && (reserve1 > 0), "Empty pool");
         // x / y = (x + x1) / (y + y1) => x * y + x * y1 = x * y + x1 * y => x * y1 = x1 * y => y1 = x1 * y / x
         return count_0 * reserve1 / reserve0 + amountForSwaps;
