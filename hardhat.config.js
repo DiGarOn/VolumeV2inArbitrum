@@ -1,4 +1,5 @@
 require("@nomicfoundation/hardhat-toolbox");
+require("hardhat-gas-reporter");
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
@@ -7,8 +8,9 @@ module.exports = {
     hardhat: {
         forking: {
             url: "https://rpc.ankr.com/eth",
-            blockNumber: 19376367,
-        }
+            blockNumber: 19376367
+        },
+        gasPrice: 95904110618
       }
     },
     solidity: {
@@ -24,4 +26,12 @@ module.exports = {
           },
       ],
   },
+  gasReporter: {
+    enabled: true,
+    currency: "USD",
+    outputFile: "gas-reporter.txt",
+    noColors: true,
+    coinmarketcap: "5c6a0212-f8a5-45e5-a88a-611f1f3f273d"
+    // baseFee: 95904110618
+  }
 };

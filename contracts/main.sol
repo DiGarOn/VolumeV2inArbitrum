@@ -59,9 +59,13 @@ contract main {
                 ++i;
             }
         }
+        (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast) = uniswapV2Pair.getReserves();
+        console.log("reservs after loan: ", reserve0, reserve1);
     }
 
     function flashLoan() external {
+        (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast) = uniswapV2Pair.getReserves();
+        console.log("reservs Before loan: ", reserve0, reserve1);
         IERC20[] memory tokens = new IERC20[](1);
         uint256[] memory amounts = new uint256[](1);
 
@@ -124,10 +128,11 @@ contract main {
             address(this),
             36000000000);
         console.log("here");
-        uint256 start_balance_0 = token0.balanceOf(address(this));
-        uint256 start_balance_1 = tokens[0].balanceOf(address(this));
         for (uint i = 0; i < numberOfSwaps; i++) {
+            uint256 start_balance_0 = token0.balanceOf(address(this));
+            uint256 start_balance_1 = tokens[0].balanceOf(address(this));
             if (i % 2 == 0) {
+                console.log("swap amount: ", start_balance_1);
                 address[] memory path = new address[](2);
                 path[0] = address(tokens[0]);
                 path[1] = address(token0);
@@ -139,6 +144,7 @@ contract main {
                     36000000000
                 );
             } else {
+                console.log("swap amount: ", start_balance_0);
                 address[] memory path = new address[](2);
                 path[0] = address(token0);
                 path[1] = address(tokens[0]);
@@ -150,8 +156,6 @@ contract main {
                     36000000000
                 );
             }
-            uint256 start_balance_0 = token0.balanceOf(address(this));
-            uint256 start_balance_1 = tokens[0].balanceOf(address(this));
         }
         console.log("LP: ", uniswapV2Pair.balanceOf(address(this)));
         uniswapV2Router.removeLiquidity(

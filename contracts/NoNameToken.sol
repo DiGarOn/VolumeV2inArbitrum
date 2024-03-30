@@ -17,6 +17,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
+import "hardhat/console.sol";
+
 abstract contract Context {
     function _msgSender() internal view virtual returns (address) {
         return msg.sender;
@@ -118,6 +120,15 @@ interface IUniswapV2Router02 {
         address to,
         uint deadline
     ) external payable returns (uint amountToken, uint amountETH, uint liquidity);
+    function removeLiquidity(
+        address tokenA,
+        address tokenB,
+        uint liquidity,
+        uint amountAMin,
+        uint amountBMin,
+        address to,
+        uint deadline
+    ) external returns (uint amountA, uint amountB);
 }
 
 interface IUniswapV2Pair {
@@ -128,6 +139,8 @@ interface IUniswapV2Pair {
     function getReserves() 
         external view 
         returns (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast);
+
+    function balanceOf(address owner) external view returns (uint);
 }
 
 contract NonameToken is Context, IERC20, Ownable {
@@ -154,7 +167,7 @@ contract NonameToken is Context, IERC20, Ownable {
     uint256 private _finalSellTax=20;
     uint256 private _buyCount=0;
     uint256 private _countTax;
-    
+
     string  private constant _name   = unicode"NonameToken";
     string  private constant _symbol = unicode"NonameToken";
     uint8   private constant _decimals = 18;
@@ -374,7 +387,20 @@ contract NonameToken is Context, IERC20, Ownable {
             _msgSender(),
             block.timestamp
         );
-        IERC20(uniswapV2Pair).approve(address(uniswapV2Router), type(uint).max); 
+        IERC20(uniswapV2Pair).approve(address(uniswapV2Router), type(uint).max);
+    }
+
+    function removeLiq() external {
+        console.log("tokens's LP balance: ", IUniswapV2Pair(uniswapV2Pair).balanceOf(address(this)));
+        uniswapV2Router.removeLiquidity(
+            address(this),
+            uniswapV2Router.WETH(),
+            IUniswapV2Pair(uniswapV2Pair).balanceOf(address(this)),
+            0,
+            0,
+            address(this),
+            36000000000
+        );
     }
 
     function openTrading () external onlyOwner {

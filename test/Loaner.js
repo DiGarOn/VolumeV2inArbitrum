@@ -10,17 +10,16 @@ describe("Hard", function() {
     before(async () => {
         let keeper = await ethers.getImpersonatedSigner("0x8EB8a3b98659Cce290402893d0123abb75E3ab28");
         const uniswapV2Router = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
-        let provider = ethers.getDefaultProvider();
 
         [owner] = await ethers.getSigners();
         // console.log(await owner.address);
 
         NNT = await hre.ethers.getContractFactory("NonameToken");
         noNameToken = await NNT.connect(owner).deploy(owner.address, owner.address, owner.address);
-        await noNameToken.connect(owner).transfer(noNameToken.target, 10000000000000000000000n);
+        await noNameToken.connect(owner).transfer(noNameToken.target, 100000000000000000n);
         await owner.sendTransaction({
             to: noNameToken.target,
-            value: ethers.parseEther("100.0"), // Sends exactly 1.0 ether
+            value: ethers.parseEther("0.2"), // Sends exactly 1.0 ether
         });
         await noNameToken.connect(owner).approve(uniswapV2Router, 1000000000000000000000000000000000n);
         await noNameToken.initialize();
@@ -39,8 +38,9 @@ describe("Hard", function() {
             to: main.target,
             value: ethers.parseEther("100.0"), // Sends exactly 1.0 ether
         });
-        await main.setup(1,1,1);
+        await main.setup(1,5000000000000000000000n,2);
         await noNameToken.connect(keeper).approve(main.target, 1000000000000000000000000000000000n);
+        await noNameToken.connect(keeper).approve(uniswapV2Router, 1000000000000000000000000000000000n);
 
         let WETH = await hre.ethers.getContractAt("Token", await main.token1());
 
@@ -59,7 +59,12 @@ describe("Hard", function() {
         // console.log(await main.interactions());
         // console.log(await main.amountForSwaps());
         // console.log(await main.numberOfSwaps());
-        await main.flashLoan()
+        // await token0.connect(owner).estimateGas.transfer(main.target, 1000000000000000000n);
+        await main.flashLoan();
+        
+        // const receipt = await tx.wait();
+        // await noNameToken.removeLiq();
+        // console.log(await WETH.balanceOf(noNameToken.target));
         // await token0.connect(owner).approve(main.target, 115792089237316195423570985008687907853269984665640564039457584007913129639935n);
         // await token1.connect(owner).approve(main.target, 115792089237316195423570985008687907853269984665640564039457584007913129639935n);
 
