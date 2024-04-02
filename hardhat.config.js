@@ -7,10 +7,11 @@ module.exports = {
   networks: {
     hardhat: {
         forking: {
-            url: "https://rpc.ankr.com/eth",
-            blockNumber: 19376367
+            // url: "https://rpc.ankr.com/eth",
+            // blockNumber: 19376367,
+            url: "https://arbitrum-one-rpc.publicnode.com"
         },
-        gasPrice: 95904110618
+        // gasPrice: 95904110618
       }
     },
     solidity: {

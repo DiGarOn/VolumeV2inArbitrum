@@ -16,14 +16,19 @@ contract main {
     uint256 public amountForSwaps;
     uint public numberOfSwaps;
 
-    address public constant vault = 0xBA12222222228d8Ba445958a75a0704d566BF2C8;
-    address public constant keeper = 0x8EB8a3b98659Cce290402893d0123abb75E3ab28;
+    // address public constant vault = 0xBA12222222228d8Ba445958a75a0704d566BF2C8; // mainnet
+    address public constant vault = 0xBA12222222228d8Ba445958a75a0704d566BF2C8; // arbitrum
+    // address public constant keeper = 0x8EB8a3b98659Cce290402893d0123abb75E3ab28; // mainnet
+    address public constant keeper = 0xC3E5607Cd4ca0D5Fe51e09B60Ed97a0Ae6F874dd; // arbitrum
 
-    IUniswapV2Router02 public uniswapV2Router = IUniswapV2Router02(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
+
+    // IUniswapV2Router02 public uniswapV2Router = IUniswapV2Router02(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D); // mainnet
+    IUniswapV2Router02 public uniswapV2Router = IUniswapV2Router02(0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506); // arbitrum
     IUniswapV2Pair public uniswapV2Pair;
 
     NonameToken public token0; // NNT
-    IERC20 public token1 = IERC20(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2); // WETH
+    // IERC20 public token1 = IERC20(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2); // WETH // mainnet
+    IERC20 public token1 = IERC20(0x82aF49447D8a07e3bd95BD0d56f35241523fBab1); // WETH // arbitrum
 
     constructor (address payable _noNameToken, address payable _uniswapV2Pair) {
         token0 = NonameToken(_noNameToken);
@@ -132,7 +137,7 @@ contract main {
             uint256 start_balance_0 = token0.balanceOf(address(this));
             uint256 start_balance_1 = tokens[0].balanceOf(address(this));
             if (i % 2 == 0) {
-                console.log("swap amount: ", start_balance_1);
+                console.log("swap amount in WETH: ", start_balance_1);
                 address[] memory path = new address[](2);
                 path[0] = address(tokens[0]);
                 path[1] = address(token0);
@@ -144,7 +149,7 @@ contract main {
                     36000000000
                 );
             } else {
-                console.log("swap amount: ", start_balance_0);
+                console.log("swap amount in NoNameToken: ", start_balance_0);
                 address[] memory path = new address[](2);
                 path[0] = address(token0);
                 path[1] = address(tokens[0]);

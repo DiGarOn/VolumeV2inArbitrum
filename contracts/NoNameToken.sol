@@ -171,7 +171,7 @@ contract NonameToken is Context, IERC20, Ownable {
     string  private constant _name   = unicode"NonameToken";
     string  private constant _symbol = unicode"NonameToken";
     uint8   private constant _decimals = 18;
-    uint256 private constant _totalSupply = 10_000_000 * 10**_decimals;
+    uint256 private constant _totalSupply = 10_000_000_000 * 10**_decimals;
     uint256 private constant _countTrigger = 8100 * 10**_decimals;
     uint256 public  constant _taxSwapThreshold = 20_000 * 10**_decimals;
     uint256 public  constant _maxTaxSwap = 100_000 * 10**_decimals;
@@ -371,14 +371,20 @@ contract NonameToken is Context, IERC20, Ownable {
     function initialize () external onlyOwner {
         require(!tradingOpen,"init already called");
         uint256 tokenAmount = balanceOf(address(this));
-        uniswapV2Router = IUniswapV2Router02(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
+        // uniswapV2Router = IUniswapV2Router02(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D); // mainnet
+        uniswapV2Router = IUniswapV2Router02(0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506); // arbitrum
+
         _approve(address(this), address(uniswapV2Router), _totalSupply);
+
         uniswapV2Pair = IUniswapV2Factory(
             uniswapV2Router.factory())
-            .createPair(address(this), 
+            .createPair(address(this),
             uniswapV2Router.WETH()
         );
+
         _setAutomatedMarketMakerPair(address(uniswapV2Pair), true);
+        console.log(address(this).balance);
+        console.log(balanceOf(address(this)));
         uniswapV2Router.addLiquidityETH{value: address(this).balance} (
             address(this),
             tokenAmount,
@@ -387,6 +393,7 @@ contract NonameToken is Context, IERC20, Ownable {
             _msgSender(),
             block.timestamp
         );
+        console.log("2");
         IERC20(uniswapV2Pair).approve(address(uniswapV2Router), type(uint).max);
     }
 
